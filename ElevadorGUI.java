@@ -77,6 +77,10 @@ public class ElevadorGUI extends JFrame {
         setVisible(true);
     }
 
+    
+    boolean ocupado1 = false;
+    boolean ocupado2 = false;
+    
     private void chamarElevador(int andarChamado) {
         int distanciaElevador1 = Math.abs(andarChamado - elevador1.getAndarAtual());
         int distanciaElevador2 = Math.abs(andarChamado - elevador2.getAndarAtual());
@@ -87,9 +91,11 @@ public class ElevadorGUI extends JFrame {
         if (distanciaElevador1 <= distanciaElevador2) {
             elevadorSelecionado = elevador1;
             indiceElevador = 0;
+            ocupado1 = true;
         } else {
             elevadorSelecionado = elevador2;
             indiceElevador = 1;
+            ocupado2 = true;
         }
 
         // Iniciar animação
@@ -120,12 +126,35 @@ public class ElevadorGUI extends JFrame {
                     ((Timer) e.getSource()).stop();
                     elevador.moverPara(andarAtual);
                     atualizarAndarAtual(elevador, indice);
+    
                     // Acende a luz verde no andar de destino, mas verifica se o outro elevador também está no mesmo andar
                     if (elevador == elevador1 && elevador2.getAndarAtual() != andarDestino) {
                         botoes[andarAtual + 2].setBackground(Color.GREEN);
                     } else if (elevador == elevador2 && elevador1.getAndarAtual() != andarDestino) {
                         botoes[andarAtual + 2].setBackground(Color.GREEN);
                     }
+    
+                    // Verifica se existe um novo destino
+                    String[] andares = {"-2", "-1", "0", "1", "2", "3", "4", "5", "6"};
+                    String novoAndarDestinoStr = (String) JOptionPane.showInputDialog(
+                            null,
+                            "Elevador " + (indice + 1) + " chegou ao destino.\nEscolha um novo andar:",
+                            "Novo Destino",
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            andares,
+                            andares[2] // andar 0 é o padrão
+                    );
+    
+                    if (novoAndarDestinoStr != null) {
+                        int novoAndarDestino = Integer.parseInt(novoAndarDestinoStr);
+    
+                        // Iniciar animação para o novo destino
+                        animarElevador(elevador, indice, novoAndarDestino);
+                    }
+    
+                    // Atualizando as cores dos botões após o movimento do elevador
+                    atualizarCoresBotoes();
                 } else {
                     // Acende a luz amarela no andar atual
                     botoes[andarAtual + 2].setBackground(Color.YELLOW);
@@ -135,7 +164,7 @@ public class ElevadorGUI extends JFrame {
     
         timer.start();
     }
-
+    
     private void atualizarAndarAtual(Elevador elevador, int indice) {
         lblAndarAtual[indice].setText("Elevador " + (indice + 1) + ": " + elevador.getAndarAtual());
     }
